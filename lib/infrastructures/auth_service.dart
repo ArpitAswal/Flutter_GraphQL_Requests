@@ -50,17 +50,25 @@ class AuthService {
   ''';
 
     final MutationOptions options = MutationOptions(
-      document: gql(mutation),
+      document: gql(mutation), // this is the mutation string you just created
+
       variables: {
+        // this is the variables map
         'input': {
           'username': username, // Must provide username
           'name': name, // Optional but good to have
           'email': email,
         }
       },
+
+      // or do something with the result.data on completion
+      onCompleted: (dynamic resultData) {
+        print(resultData);
+      },
     );
 
-    final result = await graphQLService.client.mutate(options);
+    final result =
+        await graphQLService.client.mutate(options); // Execute the mutation
 
     if (result.hasException) {
       throw Exception(result.exception.toString());
@@ -73,5 +81,37 @@ class AuthService {
       email: result.data!['createUser']['email'],
       username: result.data!['createUser']['username'],
     );
+  }
+
+  //Fetch the character
+  Future<List<dynamic>> getCharacter() async {
+    // This is a GraphQL query to fetch
+    const String query = r'''
+      query {
+        characters {
+          results {
+            id
+            name
+            image
+            status
+          }
+        }
+      }
+    ''';
+
+    final options = QueryOptions(
+      // QueryOptions is a class that contains the query and variables
+      document: gql(query), // this is the query string you just created
+    );
+
+    final result =
+        await graphQLService.client2.query(options); // Execute the query
+
+    if (result.hasException) {
+      throw Exception(result.exception.toString());
+    }
+
+    return result.data!['characters']['results']
+        as List<dynamic>; // Return the list of characters
   }
 }
